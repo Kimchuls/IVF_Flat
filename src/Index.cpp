@@ -1,6 +1,7 @@
 #include "Index.hpp"
 #include <assert.h>
 #include <vector>
+#include "VIndexAssert.hpp"
 namespace vindex
 {
   int Index::get_dim() { return dim; }
@@ -43,6 +44,17 @@ namespace vindex
     {
       residual[i] = x[i] - residual[i];
     }
+  }
+
+  size_t Index::sa_code_size() const
+  {
+    VINDEX_THROW_MSG("standalone codec not implemented for this type of index");
+  }
+
+  void Index::sa_decode(int64_t n, const uint8_t *bytes, float *x) const
+  {
+    VINDEX_THROW_MSG("standalone codec not implemented for this type of index");
+
   }
 
 } // namespace vindex

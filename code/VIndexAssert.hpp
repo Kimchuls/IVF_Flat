@@ -3,6 +3,11 @@
 #include <cstdio>
 #include <cstring>
 #include "VIndexException.hpp"
+#define VINDEX_THROW_MSG(MSG)                                   \
+    do {                                                       \
+        throw vindex::VINDEXException(                           \
+                MSG, __PRETTY_FUNCTION__, __FILE__, __LINE__); \
+    } while (false)
 
 #define VINDEX_THROW_FMT(FMT, ...)                           \
     do                                                       \
@@ -23,5 +28,12 @@
             VINDEX_THROW_FMT("Error: '%s' failed: " MSG, #X); \
         }                                                     \
     } while (false)
-
+#define VINDEX_THROW_IF_NOT_FMT(X, FMT, ...)                               \
+    do                                                                    \
+    {                                                                     \
+        if (!(X))                                                         \
+        {                                                                 \
+            VINDEX_THROW_FMT("Error: '%s' failed: " FMT, #X, __VA_ARGS__); \
+        }                                                                 \
+    } while (false)
 #endif

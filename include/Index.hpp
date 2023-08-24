@@ -73,9 +73,9 @@ namespace vindex
     // virtual void compute_residual_n(int64_t n, const float *xs, float *residuals, const int64_t *keys) const;
 
     // virtual DistanceComputer* get_distance_computer() const;
-    // virtual size_t sa_code_size() const;
-    // virtual void sa_encode(idx_t n, const float* x, uint8_t* bytes) const;
-    // virtual void sa_decode(idx_t n, const uint8_t* bytes, float* x) const;
+    virtual size_t sa_code_size() const;
+    // virtual void sa_encode(int64_t n, const float* x, uint8_t* bytes) const;
+    virtual void sa_decode(int64_t n, const uint8_t* bytes, float* x) const;
     // virtual void merge_from(Index& otherIndex, idx_t add_id = 0);
     // virtual void check_compatible_for_merge(const Index& otherIndex) const;
 
