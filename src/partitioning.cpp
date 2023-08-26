@@ -38,7 +38,7 @@ typename C::T partition_fuzzy_median3(
     // compress the arrays afterwards. So it's a n*log(n) algoirithm rather than
     // qselect's O(n) but it avoids shuffling around the array.
 
-    FAISS_THROW_IF_NOT(n >= 3);
+    VINDEX_THROW_IF_NOT(n >= 3);
 
     T thresh_inf = C::Crev::neutral();
     T thresh_sup = C::neutral();

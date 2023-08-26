@@ -33,26 +33,26 @@ namespace vindex
     std::unordered_map<int64_t, int64_t> hashtable;
 
     DirectMap();
-    // void set_type(Type new_type, const InvertedLists *invlists, size_t ntotal);
-    // int64_t get(int64_t id) const;
-    // bool no() const
-    // {
-    //   return type == NoMap;
-    // }
+    void set_type(Type new_type, const InvertedLists *invlists, size_t ntotal);
+    int64_t get(int64_t id) const;
+    bool no() const
+    {
+      return type == NoMap;
+    }
 
     /**
      * update the direct_map
      */
 
     void check_can_add(const int64_t *ids);
-    // void add_single_id(int64_t id, int64_t list_no, size_t offset);
+    void add_single_id(int64_t id, int64_t list_no, size_t offset);
     void clear();
 
     /**
      * operations on inverted lists that require translation with a DirectMap
      */
-    // size_t remove_ids(const IDSelector &sel, InvertedLists *invlists);
-    // void update_codes(InvertedLists *invlists, int n, const int64_t *ids, const int64_t *list_nos, const uint8_t *codes);
+    size_t remove_ids(const IDSelector &sel, InvertedLists *invlists);
+    void update_codes(InvertedLists *invlists, int n, const int64_t *ids, const int64_t *list_nos, const uint8_t *codes);
   };
 
   struct DirectMapAdd

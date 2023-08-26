@@ -1,6 +1,7 @@
 #include "Index.hpp"
 #include <assert.h>
 #include <vector>
+#include "DistanceComputer.hpp"
 #include "VIndexAssert.hpp"
 namespace vindex
 {
@@ -22,6 +23,56 @@ namespace vindex
   {
     std::vector<float> distances(n * k);
     // search(n, x, k, distances.data(), labels);
+  }
+  void Index::range_search(
+      int64_t,
+      const float *,
+      float,
+      RangeSearchResult *,
+      const SearchParameters *params) const
+  {
+    VINDEX_THROW_MSG("range search not implemented");
+  }
+
+  void Index::reconstruct_n(int64_t i0, int64_t ni, float *recons) const
+  {
+#pragma omp parallel for if (ni > 1000)
+    for (int64_t i = 0; i < ni; i++)
+    {
+      reconstruct(i0 + i, recons + i * d);
+    }
+  }
+
+  void Index::search_and_reconstruct(
+      int64_t n,
+      const float *x,
+      int64_t k,
+      float *distances,
+      int64_t *labels,
+      float *recons,
+      const SearchParameters *params) const
+  {
+    VINDEX_THROW_IF_NOT(k > 0);
+
+    search(n, x, k, distances, labels, params);
+    for (int64_t i = 0; i < n; ++i)
+    {
+      for (int64_t j = 0; j < k; ++j)
+      {
+        int64_t ij = i * k + j;
+        int64_t key = labels[ij];
+        float *reconstructed = recons + ij * d;
+        if (key < 0)
+        {
+          // Fill with NaNs
+          memset(reconstructed, -1, sizeof(*reconstructed) * d);
+        }
+        else
+        {
+          reconstruct(key, reconstructed);
+        }
+      }
+    }
   }
 
   size_t Index::remove_ids(const IDSelector & /*sel*/)
@@ -50,11 +101,22 @@ namespace vindex
   {
     VINDEX_THROW_MSG("standalone codec not implemented for this type of index");
   }
+  void Index::sa_encode(int64_t, const float *, uint8_t *) const
+  {
+    VINDEX_THROW_MSG("standalone codec not implemented for this type of index");
+  }
 
   void Index::sa_decode(int64_t n, const uint8_t *bytes, float *x) const
   {
     VINDEX_THROW_MSG("standalone codec not implemented for this type of index");
-
+  }
+  void Index::merge_from(Index & /* otherIndex */, int64_t /* add_id */)
+  {
+    VINDEX_THROW_MSG("merge_from() not implemented");
+  }
+  void Index::check_compatible_for_merge(const Index & /* otherIndex */) const
+  {
+    VINDEX_THROW_MSG("check_compatible_for_merge() not implemented");
   }
 
 } // namespace vindex

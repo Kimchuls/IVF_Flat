@@ -5,7 +5,9 @@
 #include "MetricType.hpp"
 namespace vindex
 {
+  struct DistanceComputer;
   struct IDSelector;
+  struct RangeSearchResult;
   struct SearchParameters
   {
   public:
@@ -32,12 +34,12 @@ namespace vindex
      * return at most k vectors (or padded -1s)
      * as output labels[n*k] and distance[n*k]
      */
-    virtual void search(int64_t n, const float *x, int64_t k, float *distances, int64_t *labels,const SearchParameters* params = nullptr) const = 0; 
+    virtual void search(int64_t n, const float *x, int64_t k, float *distances, int64_t *labels, const SearchParameters *params = nullptr) const = 0;
 
     /** query n vectors x[n*dim] to the index,
      * return all vectors with distance LESS than radius
      */
-    // virtual void range_search(int64_t n, const float *x, float radius, RangeSearchResult *result)const;
+    virtual void range_search(int64_t n, const float *x, float radius, RangeSearchResult *result, const SearchParameters *params) const;
 
     /**return the indexes of the k vectors closest to the query x
      *
@@ -57,10 +59,11 @@ namespace vindex
     // virtual void reconstruct_batch(int64_t n, const int64_t* ids, float* vectors)const;
 
     /// reconstruct vectors left to left+n-1
-    // virtual void reconstruct_n(int64_t left, int64_t n, float* vectors)const;
+    virtual void reconstruct_n(int64_t left, int64_t n, float* vectors)const;
 
     // reconstruct the stored vectors(n,k,dim) for the search results
-    // virtual void search_and_reconstruct(int64_t n, const float *x, int64_t k, float *distances, int64_t *labels, float *vectors) const;
+    virtual void search_and_reconstruct(int64_t n, const float *x, int64_t k, float *distances, int64_t *labels, float *vectors,
+        const SearchParameters* params) const;
 
     /** Computes a residual vector after indexing encoding.
      *
@@ -80,10 +83,10 @@ namespace vindex
 
     // virtual DistanceComputer* get_distance_computer() const;
     virtual size_t sa_code_size() const;
-    virtual void sa_encode(int64_t n, const float* x, uint8_t* bytes) const;
+    virtual void sa_encode(int64_t n, const float *x, uint8_t *bytes) const;
     virtual void sa_decode(int64_t n, const uint8_t *bytes, float *x) const;
-    // virtual void merge_from(Index& otherIndex, idx_t add_id = 0);
-    // virtual void check_compatible_for_merge(const Index& otherIndex) const;
+    virtual void merge_from(Index& otherIndex, int64_t add_id = 0);
+    virtual void check_compatible_for_merge(const Index& otherIndex) const;
 
     int d;                  // vector dimension
     int64_t ntotal;         // total indexed vectors
