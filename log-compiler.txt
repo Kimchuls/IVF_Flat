@@ -1,0 +1,48 @@
+src/IndexIVF.cpp: In lambda function:
+src/IndexIVF.cpp:282:17: error: ‘struct vindex::InvertedLists’ has no member named ‘prefetch_lists’
+  282 |       invlists->prefetch_lists(idx.get(), n * nprobe);
+      |                 ^~~~~~~~~~~~~~
+src/IndexIVF.cpp:284:7: error: ‘search_preassigned’ was not declared in this scope
+  284 |       search_preassigned(
+      |       ^~~~~~~~~~~~~~~~~~
+src/IndexIVF.cpp: In member function ‘virtual void vindex::IndexIVF::search(int64_t, const float*, int64_t, float*, int64_t*, const vindex::SearchParameters*) const’:
+src/IndexIVF.cpp:300:10: error: ‘parallel_mode’ was not declared in this scope
+  300 |     if ((parallel_mode & ~PARALLEL_MODE_NO_HEAP_INIT) == 0)
+      |          ^~~~~~~~~~~~~
+src/IndexIVF.cpp:300:27: error: ‘PARALLEL_MODE_NO_HEAP_INIT’ was not declared in this scope
+  300 |     if ((parallel_mode & ~PARALLEL_MODE_NO_HEAP_INIT) == 0)
+      |                           ^~~~~~~~~~~~~~~~~~~~~~~~~~
+src/IndexIVF.cpp:304:12: error: ‘mutex’ is not a member of ‘std’
+  304 |       std::mutex exception_mutex;
+      |            ^~~~~
+src/IndexIVF.cpp:10:1: note: ‘std::mutex’ is defined in header ‘<mutex>’; did you forget to ‘#include <mutex>’?
+    9 | #include "VIndexAssert.hpp"
+  +++ |+#include <mutex>
+   10 | 
+src/IndexIVF.cpp:326:18: error: ‘lock_guard’ is not a member of ‘std’
+  326 |             std::lock_guard<std::mutex> lock(exception_mutex);
+      |                  ^~~~~~~~~~
+src/IndexIVF.cpp:326:18: note: ‘std::lock_guard’ is defined in header ‘<mutex>’; did you forget to ‘#include <mutex>’?
+src/IndexIVF.cpp:326:34: error: ‘mutex’ is not a member of ‘std’
+  326 |             std::lock_guard<std::mutex> lock(exception_mutex);
+      |                                  ^~~~~
+src/IndexIVF.cpp:326:34: note: ‘std::mutex’ is defined in header ‘<mutex>’; did you forget to ‘#include <mutex>’?
+src/IndexIVF.cpp:326:46: error: ‘exception_mutex’ was not declared in this scope
+  326 |             std::lock_guard<std::mutex> lock(exception_mutex);
+      |                                              ^~~~~~~~~~~~~~~
+src/IndexIVF.cpp:326:41: error: ‘lock’ was not declared in this scope; did you mean ‘clock’?
+  326 |             std::lock_guard<std::mutex> lock(exception_mutex);
+      |                                         ^~~~
+      |                                         clock
+src/IndexIVF.cpp:334:9: error: ‘FAISS_THROW_MSG’ was not declared in this scope
+  334 |         FAISS_THROW_MSG(exception_string.c_str());
+      |         ^~~~~~~~~~~~~~~
+src/IndexIVF.cpp:340:9: error: ‘indexIVF_stats’ was not declared in this scope; did you mean ‘IndexIVFStats’?
+  340 |         indexIVF_stats.add(stats[slice]);
+      |         ^~~~~~~~~~~~~~
+      |         IndexIVFStats
+src/IndexIVF.cpp:347:49: error: ‘indexIVF_stats’ was not declared in this scope; did you mean ‘IndexIVFStats’?
+  347 |       sub_search_func(n, x, distances, labels, &indexIVF_stats);
+      |                                                 ^~~~~~~~~~~~~~
+      |                                                 IndexIVFStats
+make: *** [Makefile:88: src/IndexIVF.o] Error 1

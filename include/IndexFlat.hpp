@@ -4,44 +4,44 @@
 #include <vector>
 namespace vindex
 {
-  class IndexFlat : public IndexFlatCodes
+  struct IndexFlat : public IndexFlatCodes
   {
   public:
-    explicit IndexFlat(idx_t d, MetricType metric = METRIC_L2);
+    explicit IndexFlat(int64_t d, MetricType metric = METRIC_L2);
 
-    // void search(idx_t n, const float *x, idx_t k, float *distances, idx_t *labels, const SearchParameters *params = nullptr) const override;
+    void search(int64_t n, const float *x, int64_t k, float *distances, int64_t *labels, const SearchParameters *params = nullptr) const override;
 
-    // void range_search(idx_t n, const float *x, float radius, RangeSearchResult *result, const SearchParameters *params = nullptr) const override;
+    // void range_search(int64_t n, const float *x, float radius, RangeSearchResult *result, const SearchParameters *params = nullptr) const override;
 
-    // void reconstruct(idx_t key, float *recons) const override;
+    // void reconstruct(int64_t key, float *recons) const override;
 
-    // void compute_distance_subset(idx_t n, const float *x, idx_t k, float *distances, const idx_t *labels) const;
+    // void compute_distance_subset(int64_t n, const float *x, int64_t k, float *distances, const int64_t *labels) const;
 
     // get pointer to the floating point data
-    // float *get_xb()
-    // {
-    //   return (float *)codes.data();
-    // }
-    // const float *get_xb() const
-    // {
-    //   return (const float *)codes.data();
-    // }
+    float *get_xb()
+    {
+      return (float *)codes.data();
+    }
+    const float *get_xb() const
+    {
+      return (const float *)codes.data();
+    }
 
     IndexFlat() {}
 
     // FlatCodesDistanceComputer *get_FlatCodesDistanceComputer() const override;
 
     /* The stanadlone codec interface (just memcopies in this case) */
-    // void sa_encode(idx_t n, const float *x, uint8_t *bytes) const override;
+    void sa_encode(int64_t n, const float *x, uint8_t *bytes) const override;
 
-    // void sa_decode(idx_t n, const uint8_t *bytes, float *x) const override;
+    void sa_decode(int64_t n, const uint8_t *bytes, float *x) const override;
   };
 
-  class IndexFlatL2 : public IndexFlat
+  struct IndexFlatL2 : public IndexFlat
   {
   public:
     // std::vector<float> cached_l2norms;
-    explicit IndexFlatL2(idx_t d) : IndexFlat(d, METRIC_L2) {}
+    explicit IndexFlatL2(int64_t d) : IndexFlat(d, METRIC_L2) {}
     IndexFlatL2() {}
 
     // override for l2 norms cache.

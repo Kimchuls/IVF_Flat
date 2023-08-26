@@ -1,5 +1,6 @@
 #ifndef VINDEX_METRIC_TYPE_HPP
 #define VINDEX_METRIC_TYPE_HPP
+#include "platform_macros.hpp"
 namespace vindex
 {
   enum MetricType

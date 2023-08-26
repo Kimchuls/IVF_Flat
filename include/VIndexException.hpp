@@ -4,7 +4,7 @@
 #include <string>
 namespace vindex
 {
-  class VINDEXException : public std::exception {
+  struct VINDEXException : public std::exception {
    public:
     explicit VINDEXException(const std::string& msg);
 

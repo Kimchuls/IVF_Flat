@@ -3,7 +3,7 @@
 
 namespace vindex
 {
-  class RandomGenerator
+  struct RandomGenerator
   {
     public:
     std::mt19937 mt;

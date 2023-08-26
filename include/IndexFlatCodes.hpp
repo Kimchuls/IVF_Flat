@@ -4,17 +4,17 @@
 #include <vector>
 namespace vindex
 {
-  class IndexFlatCodes : public Index
+  struct IndexFlatCodes : public Index
   {
   public:
-    // size_t code_size;
-    // std::vector<uint8_t> codes;
+    size_t code_size;
+    std::vector<uint8_t> codes;
 
     IndexFlatCodes();
-    IndexFlatCodes(size_t code_size, idx_t d, MetricType metric = METRIC_L2);
+    IndexFlatCodes(size_t code_size, int64_t d, MetricType metric = METRIC_L2);
 
-    // void add(idx_t n, const float *x) override;
-    // void reset() override;
+    void add(int64_t n, const float *x) override;
+    void reset() override;
     // void reconstruct_n(idx_t i0, idx_t ni, float *recons) const override;
     // void reconstruct(idx_t key, float *recons) const override;
     // size_t sa_code_size() const override;

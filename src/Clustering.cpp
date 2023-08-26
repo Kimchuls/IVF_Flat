@@ -6,7 +6,7 @@
 #include <memory>
 #include <omp.h>
 
-#include "distance.hpp"
+#include "distances.hpp"
 #include "random.hpp"
 #include "VIndexAssert.hpp"
 
@@ -24,6 +24,7 @@ namespace vindex
         max_points_per_centroid(256),
         seed(1234),
         decode_block_size(32768) {}
+
   Clustering::Clustering(int d, int k) : d(d), k(k) {}
   Clustering::Clustering(int d, int k, const ClusteringParameters &cp)
       : ClusteringParameters(cp), d(d), k(k) {}
@@ -61,18 +62,6 @@ namespace vindex
       }
       return nx;
     }
-    /** compute centroids as (weighted) sum of training points
-     *
-     * @param x            training vectors, size n * code_size (from codec)
-     * @param codec        how to decode the vectors (if NULL then cast to float*)
-     * @param weights      per-training vector weight, size n (or NULL)
-     * @param assign       nearest centroid for each training vector, size n
-     * @param k_frozen     do not update the k_frozen first centroids
-     * @param centroids    centroid vectors (output only), size k * d
-     * @param hassign      histogram of assignments per centroid (size k),
-     *                     should be 0 on input
-     *
-     */
 
     void compute_centroids(size_t d, size_t k, size_t n, size_t k_frozen, const uint8_t *x, const Index *codec, const int64_t *assign, const float *weights, float *hassign, float *centroids)
     {
@@ -80,7 +69,6 @@ namespace vindex
       centroids += k_frozen * d;
       memset(centroids, 0, sizeof(*centroids) * d * k);
       size_t line_size = codec ? codec->sa_code_size() : d * sizeof(float);
-
 #pragma omp parallel
       {
         int nt = omp_get_num_threads();
@@ -135,23 +123,8 @@ namespace vindex
           c[j] *= norm;
       }
     }
-    // a bit above machine epsilon for float16
 #define EPS (1 / 1024.)
-
-    /** Handle empty clusters by splitting larger ones.
-     *
-     * It works by slightly changing the centroids to make 2 clusters from
-     * a single one. Takes the same arguments as compute_centroids.
-     *
-     * @return           nb of spliting operations (larger is worse)
-     */
-    int split_clusters(
-        size_t d,
-        size_t k,
-        size_t n,
-        size_t k_frozen,
-        float *hassign,
-        float *centroids)
+    int split_clusters(size_t d, size_t k, size_t n, size_t k_frozen, float *hassign, float *centroids)
     {
       k -= k_frozen;
       centroids += k_frozen * d;
@@ -204,12 +177,12 @@ namespace vindex
                             nx, k);
 
     VINDEX_THROW_IF_NOT_FMT(
-        (!codec || codec->dim == d),
-        "Codec dimension %d not the same as data dimension %d", int(codec->dim), int(d));
+        (!codec || codec->d == d),
+        "Codec dimension %d not the same as data dimension %d", int(codec->d), int(d));
 
     VINDEX_THROW_IF_NOT_FMT(
-        index.dim == d,
-        "Index dimension %d not the same as data dimension %d", int(index.dim), int(d));
+        index.d == d,
+        "Index dimension %d not the same as data dimension %d", int(index.d), int(d));
     // double t0=getmillisecs();
     if (!codec)
     {
@@ -291,7 +264,7 @@ namespace vindex
         for (int i = n_input_centroids; i < k; i++)
           codec->sa_decode(1, x + perm[i] * line_size, &centroids[i * d]);
       post_process_centroids();
-      if (index.total != 0)
+      if (index.ntotal != 0)
         index.reset();
       if (!index.is_trained)
         index.train(k, centroids.data());
@@ -370,12 +343,12 @@ namespace vindex
     }
   }
 
-  void Clustering::post_process_centroids()
-  {
-    if (spherical)
-      fvec_renorm_L2(d, k, centroids.data());
-    if (int_centroids)
-      for (size_t i = 0; i < centroids.size(); i++)
-        centroids[i] = roundf(centroids[i]);
-  }
+    void Clustering::post_process_centroids()
+    {
+      if (spherical)
+        fvec_renorm_L2(d, k, centroids.data());
+      if (int_centroids)
+        for (size_t i = 0; i < centroids.size(); i++)
+          centroids[i] = roundf(centroids[i]);
+    }
 } // namespace vindex

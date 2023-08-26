@@ -7,7 +7,7 @@
 CXX = g++
 
 # define any compile-time flags
-CXXFLAGS	:= -std=c++17 -fopenmp -Wall -Wextra -g -Wno-sign-compare -Wno-unused-parameter -Wno-unused-variable
+CXXFLAGS	:= -O3 -std=c++17 -fopenmp -Wall -Wextra -g -Wno-sign-compare -Wno-unused-parameter -Wno-unused-variable -Wno-type-limits
 
 # define library paths in addition to /usr/lib
 #   if I wanted to include libraries not in /usr/lib I'd specify
@@ -74,7 +74,7 @@ $(OUTPUT):
 	$(MD) $(OUTPUT)
 
 $(MAIN): $(OBJECTS)
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $(OUTPUTMAIN) $(OBJECTS) $(LFLAGS) $(LIBS)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $(OUTPUTMAIN) $(OBJECTS) $(LFLAGS) $(LIBS) && 	$(RM) $(call FIXPATH,$(OBJECTS)) && 	$(RM) $(call FIXPATH,$(DEPS))
 
 # include all .d files
 -include $(DEPS)

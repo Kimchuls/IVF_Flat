@@ -4,8 +4,8 @@
 #include "VIndexAssert.hpp"
 namespace vindex
 {
-  int Index::get_dim() { return dim; }
-  int64_t Index::get_total() { return total; };
+  int Index::get_d() { return d; }
+  int64_t Index::get_ntotal() { return ntotal; };
   bool Index::get_is_trained() { return is_trained; };
   void Index::train(int64_t, const float *)
   {
@@ -21,7 +21,7 @@ namespace vindex
   void Index::assign(int64_t n, const float *x, int64_t *labels, int64_t k) const
   {
     std::vector<float> distances(n * k);
-    search(n, x, k, distances.data(), labels);
+    // search(n, x, k, distances.data(), labels);
   }
 
   size_t Index::remove_ids(const IDSelector & /*sel*/)
@@ -40,7 +40,7 @@ namespace vindex
   void Index::compute_residual(const float *x, float *residual, int64_t key) const
   {
     reconstruct(key, residual);
-    for (size_t i = 0; i < dim; i++)
+    for (size_t i = 0; i < d; i++)
     {
       residual[i] = x[i] - residual[i];
     }
