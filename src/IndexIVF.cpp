@@ -11,7 +11,7 @@
 #include <memory>
 
 #include "AuxIndexStructures.hpp"
-
+#include "CodePacker.hpp"
 #include "IDSelector.hpp"
 #include "IndexFlat.hpp"
 #include "utils.hpp"
@@ -1201,9 +1201,9 @@ IndexIVFStats indexIVF_stats;
 size_t InvertedListScanner::scan_codes(
         size_t list_size,
         const uint8_t* codes,
-        const idx_t* ids,
+        const int64_t* ids,
         float* simi,
-        idx_t* idxi,
+        int64_t* idxi,
         size_t k) const {
     size_t nup = 0;
 
@@ -1234,7 +1234,7 @@ size_t InvertedListScanner::scan_codes(
 size_t InvertedListScanner::iterate_codes(
         InvertedListsIterator* it,
         float* simi,
-        idx_t* idxi,
+        int64_t* idxi,
         size_t k,
         size_t& list_size) const {
     size_t nup = 0;
@@ -1267,7 +1267,7 @@ size_t InvertedListScanner::iterate_codes(
 void InvertedListScanner::scan_codes_range(
         size_t list_size,
         const uint8_t* codes,
-        const idx_t* ids,
+        const int64_t* ids,
         float radius,
         RangeQueryResult& res) const {
     for (size_t j = 0; j < list_size; j++) {

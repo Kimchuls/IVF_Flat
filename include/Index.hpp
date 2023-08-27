@@ -79,7 +79,7 @@ namespace vindex
     virtual void compute_residual(const float *x, float *residual, int64_t key)
         const;
 
-    // virtual void compute_residual_n(int64_t n, const float *xs, float *residuals, const int64_t *keys) const;
+    virtual void compute_residual_n(int64_t n, const float *xs, float *residuals, const int64_t *keys) const;
 
     // virtual DistanceComputer* get_distance_computer() const;
     virtual size_t sa_code_size() const;

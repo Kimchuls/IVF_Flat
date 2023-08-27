@@ -96,6 +96,16 @@ namespace vindex
       residual[i] = x[i] - residual[i];
     }
   }
+  void Index::compute_residual_n(
+        int64_t n,
+        const float* xs,
+        float* residuals,
+        const int64_t* keys) const {
+#pragma omp parallel for
+    for (int64_t i = 0; i < n; ++i) {
+        compute_residual(&xs[i * d], &residuals[i * d], keys[i]);
+    }
+}
 
   size_t Index::sa_code_size() const
   {

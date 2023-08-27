@@ -13,6 +13,7 @@
 #include <type_traits>
 #include <vector>
 #include <sys/types.h>
+#include "random.hpp"
 namespace vindex
 {
   double getmillisecs()
@@ -45,4 +46,30 @@ namespace vindex
 
     return imbalance_factor(k, hist.data());
   }
+  const float* fvecs_maybe_subsample(
+        size_t d,
+        size_t* n,
+        size_t nmax,
+        const float* x,
+        bool verbose,
+        int64_t seed) {
+    if (*n <= nmax)
+        return x; // nothing to do
+
+    size_t n2 = nmax;
+    if (verbose) {
+        printf("  Input training set too big (max size is %zd), sampling "
+               "%zd / %zd vectors\n",
+               nmax,
+               n2,
+               *n);
+    }
+    std::vector<int> subset(*n);
+    rand_perm(subset.data(), *n, seed);
+    float* x_subset = new float[n2 * d];
+    for (int64_t i = 0; i < n2; i++)
+        memcpy(&x_subset[i * d], &x[subset[i] * size_t(d)], sizeof(x[0]) * d);
+    *n = n2;
+    return x_subset;
+}
 } // namespace vindex
