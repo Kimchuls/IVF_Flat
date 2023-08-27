@@ -188,24 +188,24 @@ void fvec_renorm_L2(size_t d, size_t nx, float* x);
 
 /* compute the inner product between x and a subset y of ny vectors,
   whose indices are given by idy.  */
-// void fvec_inner_products_by_idx(
-//         float* ip,
-//         const float* x,
-//         const float* y,
-//         const int64_t* ids,
-//         size_t d,
-//         size_t nx,
-//         size_t ny);
+void fvec_inner_products_by_idx(
+        float* ip,
+        const float* x,
+        const float* y,
+        const int64_t* ids,
+        size_t d,
+        size_t nx,
+        size_t ny);
 
 /* same but for a subset in y indexed by idsy (ny vectors in total) */
-// void fvec_L2sqr_by_idx(
-//         float* dis,
-//         const float* x,
-//         const float* y,
-//         const int64_t* ids, /* ids of y vecs */
-//         size_t d,
-//         size_t nx,
-//         size_t ny);
+void fvec_L2sqr_by_idx(
+        float* dis,
+        const float* x,
+        const float* y,
+        const int64_t* ids, /* ids of y vecs */
+        size_t d,
+        size_t nx,
+        size_t ny);
 
 /** compute dis[j] = L2sqr(x[ix[j]], y[iy[j]]) forall j=0..n-1
  *
@@ -383,26 +383,26 @@ struct RangeSearchResult;
  * @param radius search radius around the x vectors
  * @param result result structure
  */
-// void range_search_L2sqr(
-//         const float* x,
-//         const float* y,
-//         size_t d,
-//         size_t nx,
-//         size_t ny,
-//         float radius,
-//         RangeSearchResult* result,
-//         const IDSelector* sel = nullptr);
+void range_search_L2sqr(
+        const float* x,
+        const float* y,
+        size_t d,
+        size_t nx,
+        size_t ny,
+        float radius,
+        RangeSearchResult* result,
+        const IDSelector* sel = nullptr);
 
 /// same as range_search_L2sqr for the inner product similarity
-// void range_search_inner_product(
-//         const float* x,
-//         const float* y,
-//         size_t d,
-//         size_t nx,
-//         size_t ny,
-//         float radius,
-//         RangeSearchResult* result,
-//         const IDSelector* sel = nullptr);
+void range_search_inner_product(
+        const float* x,
+        const float* y,
+        size_t d,
+        size_t nx,
+        size_t ny,
+        float radius,
+        RangeSearchResult* result,
+        const IDSelector* sel = nullptr);
 
 /***************************************************************************
  * PQ tables computations

@@ -588,4 +588,113 @@ namespace vindex
       maxheap_reorder(k, simi, idxi);
     }
   }
+  /***************************************************************************
+   * Range search
+   ***************************************************************************/
+
+  void range_search_L2sqr(
+      const float *x,
+      const float *y,
+      size_t d,
+      size_t nx,
+      size_t ny,
+      float radius,
+      RangeSearchResult *res,
+      const IDSelector *sel)
+  {
+    using RH = RangeSearchResultHandler<CMax<float, int64_t>>;
+    RH resh(res, radius);
+    if (sel)
+    {
+      exhaustive_L2sqr_seq<RH, true>(x, y, d, nx, ny, resh, sel);
+    }
+    else if (nx < distance_compute_blas_threshold)
+    {
+      exhaustive_L2sqr_seq(x, y, d, nx, ny, resh, sel);
+    }
+    else
+    {
+      exhaustive_L2sqr_blas(x, y, d, nx, ny, resh);
+    }
+  }
+  void range_search_inner_product(
+      const float *x,
+      const float *y,
+      size_t d,
+      size_t nx,
+      size_t ny,
+      float radius,
+      RangeSearchResult *res,
+      const IDSelector *sel)
+  {
+    using RH = RangeSearchResultHandler<CMin<float, int64_t>>;
+    RH resh(res, radius);
+    if (sel)
+    {
+      exhaustive_inner_product_seq<RH, true>(x, y, d, nx, ny, resh, sel);
+    }
+    else if (nx < distance_compute_blas_threshold)
+    {
+      exhaustive_inner_product_seq(x, y, d, nx, ny, resh);
+    }
+    else
+    {
+      exhaustive_inner_product_blas(x, y, d, nx, ny, resh);
+    }
+  }
+  /***************************************************************************
+   * compute a subset of  distances
+   ***************************************************************************/
+
+  /* compute the inner product between x and a subset y of ny vectors,
+     whose indices are given by idy.  */
+  void fvec_inner_products_by_idx(
+      float *__restrict ip,
+      const float *x,
+      const float *y,
+      const int64_t *__restrict ids, /* for y vecs */
+      size_t d,
+      size_t nx,
+      size_t ny)
+  {
+#pragma omp parallel for
+    for (int64_t j = 0; j < nx; j++)
+    {
+      const int64_t *__restrict idsj = ids + j * ny;
+      const float *xj = x + j * d;
+      float *__restrict ipj = ip + j * ny;
+      for (size_t i = 0; i < ny; i++)
+      {
+        if (idsj[i] < 0)
+          continue;
+        ipj[i] = fvec_inner_product(xj, y + d * idsj[i], d);
+      }
+    }
+  }
+
+  /* compute the inner product between x and a subset y of ny vectors,
+     whose indices are given by idy.  */
+  void fvec_L2sqr_by_idx(
+      float *__restrict dis,
+      const float *x,
+      const float *y,
+      const int64_t *__restrict ids, /* ids of y vecs */
+      size_t d,
+      size_t nx,
+      size_t ny)
+  {
+#pragma omp parallel for
+    for (int64_t j = 0; j < nx; j++)
+    {
+      const int64_t *__restrict idsj = ids + j * ny;
+      const float *xj = x + j * d;
+      float *__restrict disj = dis + j * ny;
+      for (size_t i = 0; i < ny; i++)
+      {
+        if (idsj[i] < 0)
+          continue;
+        disj[i] = fvec_L2sqr(xj, y + d * idsj[i], d);
+      }
+    }
+  }
 } // namespace vindex

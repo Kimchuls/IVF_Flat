@@ -50,7 +50,7 @@ void Level1Quantizer::train_q1(
         bool verbose,
         MetricType metric_type) {
     size_t d = quantizer->d;
-    printf("train_q1: %d, %ld, %ld, %d\n",quantizer->is_trained ,quantizer->ntotal , nlist,quantizer_trains_alone);
+    // printf("checkpoint: train_q1: %d, %ld, %ld, %d\n",quantizer->is_trained ,quantizer->ntotal , nlist,quantizer_trains_alone);
     if (quantizer->is_trained && (quantizer->ntotal == nlist)) {
         if (verbose)
             printf("IVF quantizer does not need training.\n");
@@ -69,11 +69,11 @@ void Level1Quantizer::train_q1(
         Clustering clus(d, nlist, cp);
         quantizer->reset();
         if (clustering_index) {
-            printf("clustering_index\n");
+            // printf("checkpoint: clustering_index\n");
             clus.train(n, x, *clustering_index);
             quantizer->add(nlist, clus.centroids.data());
         } else {
-            printf("quantizer\n");
+            // printf("quantizer\n");
             clus.train(n, x, *quantizer);
         }
         quantizer->is_trained = true;
@@ -1058,7 +1058,8 @@ void IndexIVF::train(int64_t n, const float* x) {
     if (verbose) {
         printf("Training level-1 quantizer\n");
     }
-    printf("train_q1(n, x, verbose, metric_type)\n");
+    // printf("train_q1(n, x, verbose, metric_type)\n");
+    // printf("is_trained:%d\n",quantizer->is_trained);
     train_q1(n, x, verbose, metric_type);
 
     if (verbose) {

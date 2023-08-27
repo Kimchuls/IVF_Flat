@@ -4,38 +4,59 @@
 #include <vector>
 namespace vindex
 {
-  struct IndexFlat : public IndexFlatCodes
-  {
-  public:
+struct IndexFlat : IndexFlatCodes {
     explicit IndexFlat(int64_t d, MetricType metric = METRIC_L2);
 
-    void search(int64_t n, const float *x, int64_t k, float *distances, int64_t *labels, const SearchParameters *params = nullptr) const override;
+    void search(
+            int64_t n,
+            const float* x,
+            int64_t k,
+            float* distances,
+            int64_t* labels,
+            const SearchParameters* params = nullptr) const override;
 
-    // void range_search(int64_t n, const float *x, float radius, RangeSearchResult *result, const SearchParameters *params = nullptr) const override;
+    void range_search(
+            int64_t n,
+            const float* x,
+            float radius,
+            RangeSearchResult* result,
+            const SearchParameters* params = nullptr) const override;
 
-    // void reconstruct(int64_t key, float *recons) const override;
+    void reconstruct(int64_t key, float* recons) const override;
 
-    // void compute_distance_subset(int64_t n, const float *x, int64_t k, float *distances, const int64_t *labels) const;
+    /** compute distance with a subset of vectors
+     *
+     * @param x       query vectors, size n * d
+     * @param labels  indices of the vectors that should be compared
+     *                for each query vector, size n * k
+     * @param distances
+     *                corresponding output distances, size n * k
+     */
+    void compute_distance_subset(
+            int64_t n,
+            const float* x,
+            int64_t k,
+            float* distances,
+            const int64_t* labels) const;
 
     // get pointer to the floating point data
-    float *get_xb()
-    {
-      return (float *)codes.data();
+    float* get_xb() {
+        return (float*)codes.data();
     }
-    const float *get_xb() const
-    {
-      return (const float *)codes.data();
+    const float* get_xb() const {
+        return (const float*)codes.data();
     }
 
     IndexFlat() {}
 
-    // FlatCodesDistanceComputer *get_FlatCodesDistanceComputer() const override;
+    // FlatCodesDistanceComputer* get_FlatCodesDistanceComputer() const override;
 
     /* The stanadlone codec interface (just memcopies in this case) */
-    void sa_encode(int64_t n, const float *x, uint8_t *bytes) const override;
+    void sa_encode(int64_t n, const float* x, uint8_t* bytes) const override;
 
-    void sa_decode(int64_t n, const uint8_t *bytes, float *x) const override;
-  };
+    void sa_decode(int64_t n, const uint8_t* bytes, float* x) const override;
+};
+
 
   struct IndexFlatL2 : public IndexFlat
   {

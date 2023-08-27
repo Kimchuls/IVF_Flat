@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <vector>
 #include "Heap.hpp"
+#include "AuxIndexStructures.hpp"
 #include "partitioning.hpp"
 namespace vindex
 {
@@ -313,99 +314,241 @@ namespace vindex
       }
     }
   };
-/*****************************************************************
- * Single best result handler.
- * Tracks the only best result, thus avoiding storing
- * some temporary data in memory.
- *****************************************************************/
 
-template <class C>
-struct SingleBestResultHandler {
+  /*****************************************************************
+   * Result handler for range searches
+   *****************************************************************/
+
+  template <class C>
+  struct RangeSearchResultHandler
+  {
+    using T = typename C::T;
+    using TI = typename C::TI;
+
+    RangeSearchResult *res;
+    float radius;
+
+    RangeSearchResultHandler(RangeSearchResult *res, float radius)
+        : res(res), radius(radius) {}
+
+    /******************************************************
+     * API for 1 result at a time (each SingleResultHandler is
+     * called from 1 thread)
+     ******************************************************/
+
+    struct SingleResultHandler
+    {
+      // almost the same interface as RangeSearchResultHandler
+      RangeSearchPartialResult pres;
+      float radius;
+      RangeQueryResult *qr = nullptr;
+
+      SingleResultHandler(RangeSearchResultHandler &rh)
+          : pres(rh.res), radius(rh.radius) {}
+
+      /// begin results for query # i
+      void begin(size_t i)
+      {
+        qr = &pres.new_result(i);
+      }
+
+      /// add one result for query i
+      void add_result(T dis, TI idx)
+      {
+        if (C::cmp(radius, dis))
+        {
+          qr->add(dis, idx);
+        }
+      }
+
+      /// series of results for query i is done
+      void end() {}
+
+      ~SingleResultHandler()
+      {
+        pres.finalize();
+      }
+    };
+
+    /******************************************************
+     * API for multiple results (called from 1 thread)
+     ******************************************************/
+
+    size_t i0, i1;
+
+    std::vector<RangeSearchPartialResult *> partial_results;
+    std::vector<size_t> j0s;
+    int pr = 0;
+
+    /// begin
+    void begin_multiple(size_t i0, size_t i1)
+    {
+      this->i0 = i0;
+      this->i1 = i1;
+    }
+
+    /// add results for query i0..i1 and j0..j1
+
+    void add_results(size_t j0, size_t j1, const T *dis_tab)
+    {
+      RangeSearchPartialResult *pres;
+      // there is one RangeSearchPartialResult structure per j0
+      // (= block of columns of the large distance matrix)
+      // it is a bit tricky to find the poper PartialResult structure
+      // because the inner loop is on db not on queries.
+
+      if (pr < j0s.size() && j0 == j0s[pr])
+      {
+        pres = partial_results[pr];
+        pr++;
+      }
+      else if (j0 == 0 && j0s.size() > 0)
+      {
+        pr = 0;
+        pres = partial_results[pr];
+        pr++;
+      }
+      else
+      { // did not find this j0
+        pres = new RangeSearchPartialResult(res);
+        partial_results.push_back(pres);
+        j0s.push_back(j0);
+        pr = partial_results.size();
+      }
+
+      for (size_t i = i0; i < i1; i++)
+      {
+        const float *ip_line = dis_tab + (i - i0) * (j1 - j0);
+        RangeQueryResult &qres = pres->new_result(i);
+
+        for (size_t j = j0; j < j1; j++)
+        {
+          float dis = *ip_line++;
+          if (C::cmp(radius, dis))
+          {
+            qres.add(dis, j);
+          }
+        }
+      }
+    }
+
+    void end_multiple() {}
+
+    ~RangeSearchResultHandler()
+    {
+      if (partial_results.size() > 0)
+      {
+        RangeSearchPartialResult::merge(partial_results);
+      }
+    }
+  };
+  /*****************************************************************
+   * Single best result handler.
+   * Tracks the only best result, thus avoiding storing
+   * some temporary data in memory.
+   *****************************************************************/
+
+  template <class C>
+  struct SingleBestResultHandler
+  {
     using T = typename C::T;
     using TI = typename C::TI;
 
     int nq;
     // contains exactly nq elements
-    T* dis_tab;
+    T *dis_tab;
     // contains exactly nq elements
-    TI* ids_tab;
+    TI *ids_tab;
 
-    SingleBestResultHandler(size_t nq, T* dis_tab, TI* ids_tab)
-            : nq(nq), dis_tab(dis_tab), ids_tab(ids_tab) {}
+    SingleBestResultHandler(size_t nq, T *dis_tab, TI *ids_tab)
+        : nq(nq), dis_tab(dis_tab), ids_tab(ids_tab) {}
 
-    struct SingleResultHandler {
-        SingleBestResultHandler& hr;
+    struct SingleResultHandler
+    {
+      SingleBestResultHandler &hr;
 
-        T min_dis;
-        TI min_idx;
-        size_t current_idx = 0;
+      T min_dis;
+      TI min_idx;
+      size_t current_idx = 0;
 
-        SingleResultHandler(SingleBestResultHandler& hr) : hr(hr) {}
+      SingleResultHandler(SingleBestResultHandler &hr) : hr(hr) {}
 
-        /// begin results for query # i
-        void begin(const size_t current_idx) {
-            this->current_idx = current_idx;
-            min_dis = HUGE_VALF;
-            min_idx = 0;
+      /// begin results for query # i
+      void begin(const size_t current_idx)
+      {
+        this->current_idx = current_idx;
+        min_dis = HUGE_VALF;
+        min_idx = 0;
+      }
+
+      /// add one result for query i
+      void add_result(T dis, TI idx)
+      {
+        if (C::cmp(min_dis, dis))
+        {
+          min_dis = dis;
+          min_idx = idx;
         }
+      }
 
-        /// add one result for query i
-        void add_result(T dis, TI idx) {
-            if (C::cmp(min_dis, dis)) {
-                min_dis = dis;
-                min_idx = idx;
-            }
-        }
-
-        /// series of results for query i is done
-        void end() {
-            hr.dis_tab[current_idx] = min_dis;
-            hr.ids_tab[current_idx] = min_idx;
-        }
+      /// series of results for query i is done
+      void end()
+      {
+        hr.dis_tab[current_idx] = min_dis;
+        hr.ids_tab[current_idx] = min_idx;
+      }
     };
 
     size_t i0, i1;
 
     /// begin
-    void begin_multiple(size_t i0, size_t i1) {
-        this->i0 = i0;
-        this->i1 = i1;
+    void begin_multiple(size_t i0, size_t i1)
+    {
+      this->i0 = i0;
+      this->i1 = i1;
 
-        for (size_t i = i0; i < i1; i++) {
-            this->dis_tab[i] = HUGE_VALF;
-        }
+      for (size_t i = i0; i < i1; i++)
+      {
+        this->dis_tab[i] = HUGE_VALF;
+      }
     }
 
     /// add results for query i0..i1 and j0..j1
-    void add_results(size_t j0, size_t j1, const T* dis_tab) {
-        for (int64_t i = i0; i < i1; i++) {
-            const T* dis_tab_i = dis_tab + (j1 - j0) * (i - i0) - j0;
+    void add_results(size_t j0, size_t j1, const T *dis_tab)
+    {
+      for (int64_t i = i0; i < i1; i++)
+      {
+        const T *dis_tab_i = dis_tab + (j1 - j0) * (i - i0) - j0;
 
-            auto& min_distance = this->dis_tab[i];
-            auto& min_index = this->ids_tab[i];
+        auto &min_distance = this->dis_tab[i];
+        auto &min_index = this->ids_tab[i];
 
-            for (size_t j = j0; j < j1; j++) {
-                const T distance = dis_tab_i[j];
+        for (size_t j = j0; j < j1; j++)
+        {
+          const T distance = dis_tab_i[j];
 
-                if (C::cmp(min_distance, distance)) {
-                    min_distance = distance;
-                    min_index = j;
-                }
-            }
+          if (C::cmp(min_distance, distance))
+          {
+            min_distance = distance;
+            min_index = j;
+          }
         }
+      }
     }
 
-    void add_result(const size_t i, const T dis, const TI idx) {
-        auto& min_distance = this->dis_tab[i];
-        auto& min_index = this->ids_tab[i];
+    void add_result(const size_t i, const T dis, const TI idx)
+    {
+      auto &min_distance = this->dis_tab[i];
+      auto &min_index = this->ids_tab[i];
 
-        if (C::cmp(min_distance, dis)) {
-            min_distance = dis;
-            min_index = idx;
-        }
+      if (C::cmp(min_distance, dis))
+      {
+        min_distance = dis;
+        min_index = idx;
+      }
     }
 
     /// series of results for queries i0..i1 is done
     void end_multiple() {}
-};
+  };
 } // namespace vindex

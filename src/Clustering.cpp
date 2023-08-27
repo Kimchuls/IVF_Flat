@@ -196,6 +196,7 @@ namespace vindex
     std::unique_ptr<uint8_t[]> del1;
     std::unique_ptr<float[]> del3;
     size_t line_size = codec ? codec->sa_code_size() : sizeof(float) * d;
+    // printf("nx %ld, k %ld, max_points_per_centroid %d\n", nx, k, max_points_per_centroid);
     if (nx > k * max_points_per_centroid)
     {
       uint8_t *x_new;
@@ -268,6 +269,7 @@ namespace vindex
         index.reset();
       if (!index.is_trained)
         index.train(k, centroids.data());
+      // printf("checkpoint: index.add(k, centroids.data());, is_trained: %d\n",index.is_trained);
       index.add(k, centroids.data());
       // k-means iterations
       float obj = 0;
@@ -343,12 +345,12 @@ namespace vindex
     }
   }
 
-    void Clustering::post_process_centroids()
-    {
-      if (spherical)
-        fvec_renorm_L2(d, k, centroids.data());
-      if (int_centroids)
-        for (size_t i = 0; i < centroids.size(); i++)
-          centroids[i] = roundf(centroids[i]);
-    }
+  void Clustering::post_process_centroids()
+  {
+    if (spherical)
+      fvec_renorm_L2(d, k, centroids.data());
+    if (int_centroids)
+      for (size_t i = 0; i < centroids.size(); i++)
+        centroids[i] = roundf(centroids[i]);
+  }
 } // namespace vindex

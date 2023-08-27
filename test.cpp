@@ -65,6 +65,8 @@ int *ivecs_read(const char *fname, size_t *d_out, size_t *n_out)
 void load_data(char *filename, float *&data, int num, int dim)
 {
   std::ifstream in(filename, std::ios::binary); // open file in binary
+  printf("%s\n",filename);
+  exit(0);
   if (!in.is_open())
   {
     std::cout << "open file error" << std::endl;
@@ -112,7 +114,7 @@ int main()
   // std::mt19937 rng;
   // std::uniform_real_distribution<> distrib;
 
-  char *base_filepath = "/Users/zyn/Desktop/research/dataset/sift/sift_base.fvecs";
+  char *base_filepath = "/home/jin467/playground/IVF_Flat/sift/sift_base.fvecs";
 
   // load base dataset in method1
   float *xb = new float[d * nb];
@@ -136,7 +138,7 @@ int main()
       xb[d * i] += i / 1000.;
   }*/
   float *xq = new float[d * nq];
-  char *query_filepath = "/Users/zyn/Desktop/research/dataset/sift/sift_query.fvecs";
+  char *query_filepath = "/home/jin467/playground/IVF_Flat/sift/sift_query.fvecs";
   size_t dd2; // dimension
   size_t nt2; // the number of query
   printf("[%.3f s] loading queryset of vectors \n",
@@ -161,7 +163,7 @@ int main()
 
     // load ground-truth and convert int to long
     size_t nq2;
-    int *gt_int = ivecs_read("/Users/zyn/Desktop/research/dataset/sift/sift_groundtruth.ivecs", &kk, &nq2);
+    int *gt_int = ivecs_read("/home/jin467/playground/IVF_Flat/sift/sift_groundtruth.ivecs", &kk, &nq2);
     assert(nq2 == nq || !"incorrect nb of ground truth entries");
 
     gt = new faiss::Index::idx_t[kk * nq];

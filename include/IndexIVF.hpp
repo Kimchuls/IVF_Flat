@@ -118,35 +118,36 @@ namespace vindex
 
   struct RangeQueryResult;
 
-/** Object that handles a query. The inverted lists to scan are
- * provided externally. The object has a lot of state, but
- * distance_to_code and scan_codes can be called in multiple
- * threads */
-struct InvertedListScanner {
-    int64_t list_no = -1;    ///< remember current list
+  /** Object that handles a query. The inverted lists to scan are
+   * provided externally. The object has a lot of state, but
+   * distance_to_code and scan_codes can be called in multiple
+   * threads */
+  struct InvertedListScanner
+  {
+    int64_t list_no = -1;  ///< remember current list
     bool keep_max = false; ///< keep maximum instead of minimum
     /// store positions in invlists rather than labels
     bool store_pairs;
 
     /// search in this subset of ids
-    const IDSelector* sel;
+    const IDSelector *sel;
 
     InvertedListScanner(
-            bool store_pairs = false,
-            const IDSelector* sel = nullptr)
-            : store_pairs(store_pairs), sel(sel) {}
+        bool store_pairs = false,
+        const IDSelector *sel = nullptr)
+        : store_pairs(store_pairs), sel(sel) {}
 
     /// used in default implementation of scan_codes
     size_t code_size = 0;
 
     /// from now on we handle this query.
-    virtual void set_query(const float* query_vector) = 0;
+    virtual void set_query(const float *query_vector) = 0;
 
     /// following codes come from this inverted list
     virtual void set_list(int64_t list_no, float coarse_dis) = 0;
 
     /// compute a single query-to-code distance
-    virtual float distance_to_code(const uint8_t* code) const = 0;
+    virtual float distance_to_code(const uint8_t *code) const = 0;
 
     /** scan a set of codes, compute distances to current query and
      * update heap of results if necessary. Default implemetation
@@ -161,41 +162,41 @@ struct InvertedListScanner {
      * @return number of heap updates performed
      */
     virtual size_t scan_codes(
-            size_t n,
-            const uint8_t* codes,
-            const int64_t* ids,
-            float* distances,
-            int64_t* labels,
-            size_t k) const;
+        size_t n,
+        const uint8_t *codes,
+        const int64_t *ids,
+        float *distances,
+        int64_t *labels,
+        size_t k) const;
 
     // same as scan_codes, using an iterator
     virtual size_t iterate_codes(
-            InvertedListsIterator* iterator,
-            float* distances,
-            int64_t* labels,
-            size_t k,
-            size_t& list_size) const;
+        InvertedListsIterator *iterator,
+        float *distances,
+        int64_t *labels,
+        size_t k,
+        size_t &list_size) const;
 
     /** scan a set of codes, compute distances to current query and
      * update results if distances are below radius
      *
      * (default implementation fails) */
     virtual void scan_codes_range(
-            size_t n,
-            const uint8_t* codes,
-            const int64_t* ids,
-            float radius,
-            RangeQueryResult& result) const;
+        size_t n,
+        const uint8_t *codes,
+        const int64_t *ids,
+        float radius,
+        RangeQueryResult &result) const;
 
     // same as scan_codes_range, using an iterator
     virtual void iterate_codes_range(
-            InvertedListsIterator* iterator,
-            float radius,
-            RangeQueryResult& result,
-            size_t& list_size) const;
+        InvertedListsIterator *iterator,
+        float radius,
+        RangeQueryResult &result,
+        size_t &list_size) const;
 
     virtual ~InvertedListScanner() {}
-};
+  };
 
   struct IndexIVFStats
   {
